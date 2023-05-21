@@ -1,0 +1,25 @@
+{
+    "Names": {
+        "0": "Alice",
+        "1": "Robert",
+        "2": "Garry",
+        "3": "Nate",
+        "4": "Karen",
+        "5": "Nick"
+    },
+    "Address": {
+        "0": "21 Main St",
+        "1": "19 Third St",
+        "2": "4 Church St",
+        "3": "5 High St",
+        "4": "9 Elm St",
+        "5": "06 Washingtom St"
+    },
+    "AreaCode": {
+        "0": "777",
+        "1": "421",
+        "2": "768",
+        "3": "345",
+        "4": "888",
+        "5": "123"
+    }}

@@ -1,21 +1,13 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import pandas as pd
-import os
 import sqlite3
 import openpyxl
-import dash
-from dash import html
 from statistics import mean
-
 from dash_iconify import DashIconify
-from dash import dcc
-import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-from datetime import datetime
-import plotly.graph_objects as go
-import pandas as pd
+
 
 con = sqlite3.connect('pythonDB.db')
 def export_to_sqlite():
@@ -117,7 +109,6 @@ df_select_date['Date'] = pd.to_datetime(df_select_date["dateavg"], format="%Y-%m
 df_select_date.sort_values("Date", inplace=True)
 
 
-
 df_amount7500 = pd.read_sql(
     (f'''SELECT COUNT(Order_number) as amount FROM all_data WHERE Order_price > 7500;'''), con)
 
@@ -127,8 +118,6 @@ df_amount7500_choose = pd.read_sql(
     FROM all_data  WHERE Order_price > 7500 GROUP BY dateavg;'''), con)
 df_amount7500_choose['Date'] = pd.to_datetime(df_amount7500_choose["dateavg"], format="%Y-%m-%d 00:00:00")
 df_amount7500_choose.sort_values("Date", inplace=True)
-
-
 
 
 daily_price_storage = pd.read_sql(
@@ -155,19 +144,8 @@ select_price_storage = pd.read_sql(
     FROM all_data GROUP BY dateavg;'''), con)
 select_price_storage['Date'] = pd.to_datetime(df_select_date["dateavg"], format="%Y-%m-%d")
 select_price_storage.sort_values("Date", inplace=True)
-
-#select_price_storage['Date'] = pd.to_datetime(select_price_storage["dateavg"], format="%Y-%m-%d")
-#df_select_date.sort_values("Date", inplace=True)
-
-external_stylesheets = [
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
-     dbc.themes.SLATE
-]
-
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
     
     
-icon_path = 'icons/office-2_96350.svg'   
 external_stylesheets = [
     {        
         "href": "https://fonts.googleapis.com/css2?",
@@ -223,356 +201,596 @@ tab_selected_style = {
 }
 
 
-app.layout = html.Div(
-    children=[
+app.layout = html.Div(children=[
         html.Div(
-            children=[
-                html.H1(children='Анализ показателей ВПЗ',
-                        style={
-                            'textAlign': 'center'
-                        }, className="header"),]),
-        html.Div(
-            children = [
-                html.Div(children = [
-                    html.Div(children = [
-                        DashIconify(
-                            icon="carbon:align-box-bottom-center",
-                            width=30,
-                            )
-                    ], className='icon-number'),
-                    
-                    html.Div(children = [
-                        html.Div(children = [
-                            html.H4('ЗАКАЗОВ ДОРОЖЕ 7500р'),
-                            html.Small('выберете даты', className='muted-text')
-                        ], className='data-numeric-info'),
-                        html.Details(
-                            children=[
-                                html.Summary(children=[
+        children=[
+            html.Div(
+                children=[
+                    html.H1(children='Анализ показателей ВПЗ',
+                            style={
+                                'textAlign': 'center'
+                            }, className="header"),]),
+            html.Div(className='for_numric_data',
+                children = [
+                    # ---------- Первый контейнер с данными ----------
+                    html.Div(className='data-numeric-container',
+                        children = [
+                            html.Div(className='icon-number',
+                                children = [
                                     DashIconify(
-                                    icon="material-symbols:keyboard-arrow-down-rounded",
-                                    width=30,
-                                    color='#d6d6d6'
+                                        icon="carbon:align-box-bottom-center",
+                                        width=40,
+                                        className='icon',
+                                    ),
+                                    html.Div(className='data-numeric-info',
+                                        children = [
+                                            html.H4('ЗАКАЗОВ ДОРОЖЕ 7500р', className='box-text'),
+                                            html.Small('выберете даты', className='muted-text')
+                                        ]
+                                    ),
+                                    DashIconify(
+                                        icon="material-symbols:keyboard-arrow-down-rounded",
+                                        width=30,
+                                        color='#d6d6d6',
+                                        className='icon-arrow',
                                     )
-                                ], className='icon-on-graph'),
-                                html.Div(
-                                    children=[
-                                        dcc.DatePickerRange(
-                                            id="date-range-7500", className='date',
-                                            day_size=39,
-                                            min_date_allowed=df_select_date.Date.min().date(),
-                                            max_date_allowed=df_select_date.Date.max().date(),
-                                            start_date=df_select_date.Date.min().date(),
-                                            end_date=df_select_date.Date.max().date(),
-                                                ),
-                                    ], className="choose-date"
-                                )
-                            ]
-                        ),
-                        html.P(id='amount_7500')], className='right-data-numeric')
-                ], className='data-numeric-container'),
-                html.Div(children = [
-                    html.Div(children = [
-                        DashIconify(
-                            icon="carbon:align-box-bottom-center",
-                            width=30,
-                            )
-                    ], className='icon-number'),
-                    html.Div(children = [
-                        html.Div(children = [
-                            html.H4('ВЫПЛАТА ОТ ЯНДЕКСА'),
-                            html.Small('выберете промежуток', className='muted-text')
-                        ], className='data-numeric-info'),
-                        html.P(df_amount7500['amount'])], className='right-data-numeric')
-                ], className='data-numeric-container'),
-                html.Div(children = [
-                    html.Div(children = [
-                        DashIconify(
-                            icon="carbon:align-box-bottom-center",
-                            width=30,
-                            )
-                    ], className='icon-number'),
-                    html.Div(children = [
-                        html.Div(children = [
-                            html.H4('УНИКАЛЬНЫХ КЛИЕНТОВ'),
-                            html.Small('выберете промежуток', className='muted-text')
-                        ], className='data-numeric-info'),
-                        html.P(df_amount7500['amount'])], className='right-data-numeric')
-                ], className='data-numeric-container'),
-                 html.Div(children = [
-                     html.Div(children = [
-                         DashIconify(
-                             icon="carbon:align-box-bottom-center",
-                             width=30,
-                             )
-                     ], className='icon-number'),
-                     html.Div(children = [
-                         html.Div(children = [
-                             html.H4('ПОСТОЯННЫХ КЛИЕНТОВ'),
-                             html.Small('выберете промежуток', className='muted-text')
-                         ], className='data-numeric-info'),
-                         html.P(df_amount7500['amount'])], className='right-data-numeric')
-                 ], className='data-numeric-container'),
-            ],
-            className='for_numric_data'),
-        html.Div(children=[
-            # ----------- первый график -----------
-            html.Div([
-                dcc.Tabs(id="tabs", value='tab-1', className='TabGroup', children=[
-                    dcc.Tab(label='Цена', value='tab-1', style = tab_style,
-                    selected_style = tab_selected_style, className='One-Tab'),
-                    dcc.Tab(label='Кол-во', value='tab-12', style = tab_style,
-                    selected_style = tab_selected_style,className='One-Tab'),
-                ], style = tabs_styles),
-                html.Div(id='tabs-content'),
-                # --------------- Числовые данные внизу графика ---------------
-                html.Div(children = [
-                        # --------------- Первая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-currency-ruble",
-                                        width=20,
-                                        )
-                                ], className='icon-price'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ₽'),
-                                        html.Small('продано суммарно за 1 день', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(daily_price_storage['pricedailysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                        # --------------- Вторая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-production-quantity-limits",
-                                        width=20,
-                                        )
-                                ], className='icon-amount'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ШТ'),
-                                        html.Small('продано суммарно за 1 день', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(daily_price_storage['amountdailysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                ],
-                         className='data-on-graph')
-                ], className='container-for-graph'
-            ),
-            # ----------- второй график -----------
-            html.Div([
-                dcc.Tabs(id="tabs_2", value='tab-2', className='TabGroup', children=[
-                    dcc.Tab(label='Цена', value='tab-2', style = tab_style,
-                    selected_style = tab_selected_style, className='One-Tab'),
-                    dcc.Tab(label='Кол-во', value='tab-22', style = tab_style,
-                    selected_style = tab_selected_style, className='One-Tab'),
-                ], style = tabs_styles),
-                html.Div(id='tabs-content_2'),
-                # --------------- Числовые данные внизу графика ---------------
-                html.Div(children = [
-                        # --------------- Первая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-currency-ruble",
-                                        width=20,
-                                        )
-                                ], className='icon-price'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ₽'),
-                                        html.Small('продано суммарно за 1 неделю', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(weekly_price_storage['priceweeklysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                        # --------------- Вторая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-production-quantity-limits",
-                                        width=20,
-                                        )
-                                ], className='icon-amount'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ШТ'),
-                                        html.Small('продано суммарно за 1 неделю', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(weekly_price_storage['amountweeklysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                ],
-                         className='data-on-graph')
-                ], className='container-for-graph'
-            ),
-            # ----------- третий график -----------
-            html.Div([
-                dcc.Tabs(id="tabs_3", value='tab-3', className='TabGroup', children=[
-                    dcc.Tab(label='Цена', value='tab-3', style = tab_style,
-                    selected_style = tab_selected_style, className='One-Tab'),
-                    dcc.Tab(label='Кол-во', value='tab-32', style = tab_style,
-                    selected_style = tab_selected_style,className='One-Tab'),
-                ], style = tabs_styles),
-                html.Div(id='tabs-content_3'),
-                # --------------- Числовые данные внизу графика ---------------
-                html.Div(children = [
-                        # --------------- Первая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-currency-ruble",
-                                        width=20,
-                                        )
-                                ], className='icon-price'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ₽'),
-                                        html.Small('продано суммарно за 1 месяц', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(monthly_price_storage['pricemonthlysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                        # --------------- Вторая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
-                                    DashIconify(
-                                        icon="ic:sharp-production-quantity-limits",
-                                        width=20,
-                                        )
-                                ], className='icon-amount'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ШТ'),
-                                        html.Small('продано суммарно за 1 месяц', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(monthly_price_storage['amountmonthlysumavg'])], className='number')
-                        ], className='data-on-graph-container-test'),
-                ],
-                         className='data-on-graph')
-                ], className='container-for-graph'
-            ),
-            # ----------- четвертый график -----------
-            html.Div([
-                html.Div(
-                    children=[
-                        html.Details(
-                            children=[
-                                html.Summary(children=[
-                                    DashIconify(
-                                    icon="material-symbols:keyboard-arrow-down-rounded",
-                                    width=30,
-                                    color='#d6d6d6'
-                                    )
-                                ], className='icon-on-graph'),
-                                html.Div(
-                                    children=[
-                                        dcc.DatePickerRange(
-                                            id="date-range", className='date',
-                                            day_size=39,
-                                            min_date_allowed=df_select_date.Date.min().date(),
-                                            max_date_allowed=df_select_date.Date.max().date(),
-                                            start_date=df_select_date.Date.min().date(),
-                                            end_date=df_select_date.Date.max().date(),
-                                                ),
-                                    ], className="choose-date"
-                                )
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                dcc.Tabs(id="tabs_4", value='tab-4', className='TabGroup-2',
+                                ]
+                            ),
+                            html.Div(className='right-data-numeric',
+                                children = [
+                                    html.Details(
                                         children=[
-                                            dcc.Tab(label='Цена', value='tab-4', style = tab_style,
-                                            selected_style = tab_selected_style, className='One-Tab',),
-                                            dcc.Tab(label='Кол-во', value='tab-42', style = tab_style,
-                                            selected_style = tab_selected_style,className='One-Tab'),
-                                        ], style = tabs_styles
-                                )
-                            ]
-                        ),
-                    ], className='TabGroup-3'
-                ),
-                html.Div(id='tabs-content_4'),
-                # --------------- Числовые данные внизу графика ---------------
-                html.Div(children = [
-                        # --------------- Первая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
+                                            html.Summary(className='icon-on-graph',
+                                                children=[
+                                                    
+                                                ]
+                                            ),
+                                            html.Div(className="choose-date",
+                                                children=[
+                                                    dcc.DatePickerRange(
+                                                        id="date-range-7500", className='date',
+                                                        day_size=39,
+                                                        min_date_allowed=df_select_date.Date.min().date(),
+                                                        max_date_allowed=df_select_date.Date.max().date(),
+                                                        start_date=df_select_date.Date.min().date(),
+                                                        end_date=df_select_date.Date.max().date(),
+                                                    ),
+                                                ] 
+                                            )
+                                        ]
+                                    ),
+                                    html.P(id='amount_7500')
+                                ]
+                            )
+                        ]
+                    ),
+                    # ---------- Второй контейнер с данными ----------
+                    html.Div(className='data-numeric-container',
+                        children = [
+                            html.Div(className='icon-number',
+                                children = [
                                     DashIconify(
-                                        icon="ic:sharp-currency-ruble",
-                                        width=20,
-                                        )
-                                ], className='icon-price'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ₽'),
-                                        html.Small('продано суммарно за период', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(id='price_data')], className='number')
-                        ], className='data-on-graph-container-test'),
-                        # --------------- Вторая плашка с данными ---------------
-                        html.Div(children = [
-                            # --------------- Иконка + текст ---------------
-                            html.Div(children = [
-                                # --------------- Иконка ---------------
-                                html.Div(children = [
+                                        icon="carbon:align-box-bottom-center",
+                                        width=40,
+                                        className='icon',
+                                    ),
+                                    html.Div(className='data-numeric-info',
+                                        children = [
+                                            html.H4('ВЫПЛАТА ОТ ЯНДЕКСА', className='box-text'),
+                                            html.Small('выберете даты', className='muted-text')
+                                        ]
+                                    ),
                                     DashIconify(
-                                        icon="ic:sharp-production-quantity-limits",
-                                        width=20,
-                                        )
-                                ], className='icon-amount'),
-                                # --------------- Только текст ---------------
-                                html.Div(children = [
-                                        html.P('СРЕДНИЕ ПРОДАЖИ, ШТ'),
-                                        html.Small('продано суммарно за период', className='muted-text')
-                                    ], className='data-on-graph-info-test')], className='icon-and-text'),
-                            # --------------- Весь текст с числом ---------------
-                            html.Div(children = [
-                                html.P(id='amount_data')], className='number')
-                        ], className='data-on-graph-container-test'),
-                ],
-                         className='data-on-graph')
-                ], className='container-for-graph'
+                                        icon="material-symbols:keyboard-arrow-down-rounded",
+                                        width=30,
+                                        color='#d6d6d6',
+                                        className='icon-arrow',
+                                    )
+                                ]
+                            ),
+                            html.Div(className='right-data-numeric',
+                                children = [
+                                    html.Details(
+                                        children=[
+                                            html.Summary(className='icon-on-graph',
+                                                children=[
+                                                    
+                                                ]
+                                            ),
+                                            html.Div(className="choose-date",
+                                                children=[
+                                                    dcc.DatePickerRange(
+                                                        id="date-yandex_payment", className='date',
+                                                        day_size=39,
+                                                        min_date_allowed=df_select_date.Date.min().date(),
+                                                        max_date_allowed=df_select_date.Date.max().date(),
+                                                        start_date=df_select_date.Date.min().date(),
+                                                        end_date=df_select_date.Date.max().date(),
+                                                    ),
+                                                ] 
+                                            )
+                                        ]
+                                    ),
+                                    html.P(id='yandex_payment')
+                                ]
+                            )
+                        ]
+                    ),
+                    # ---------- Третий контейнер с данными ----------
+                    html.Div(className='data-numeric-container',
+                        children = [
+                            html.Div(className='icon-number',
+                                children = [
+                                    DashIconify(
+                                        icon="carbon:align-box-bottom-center",
+                                        width=40,
+                                        className='icon',
+                                    ),
+                                    html.Div(className='data-numeric-info',
+                                        children = [
+                                            html.H4('УНИКАЛЬНЫХ КЛИЕНТОВ', className='box-text'),
+                                            html.Small('выберете даты', className='muted-text')
+                                        ]
+                                    ),
+                                    DashIconify(
+                                        icon="material-symbols:keyboard-arrow-down-rounded",
+                                        width=30,
+                                        color='#d6d6d6',
+                                        className='icon-arrow',
+                                    )
+                                ]
+                            ),
+                            html.Div(className='right-data-numeric',
+                                children = [
+                                    html.Details(
+                                        children=[
+                                            html.Summary(className='icon-on-graph',
+                                                children=[
+                                                    
+                                                ]
+                                            ),
+                                            html.Div(className="choose-date",
+                                                children=[
+                                                    dcc.DatePickerRange(
+                                                        id="date-uniq_customers", className='date',
+                                                        day_size=39,
+                                                        min_date_allowed=df_select_date.Date.min().date(),
+                                                        max_date_allowed=df_select_date.Date.max().date(),
+                                                        start_date=df_select_date.Date.min().date(),
+                                                        end_date=df_select_date.Date.max().date(),
+                                                    ),
+                                                ] 
+                                            )
+                                        ]
+                                    ),
+                                    html.P(id='uniq_customers')
+                                ]
+                            )
+                        ]
+                    ),
+                    # ---------- Четвертый контейнер с данными ----------
+                    html.Div(className='data-numeric-container',
+                        children = [
+                            html.Div(className='icon-number',
+                                children = [
+                                    DashIconify(
+                                        icon="carbon:align-box-bottom-center",
+                                        width=40,
+                                        className='icon',
+                                    ),
+                                    html.Div(className='data-numeric-info',
+                                        children = [
+                                            html.H4('ПОСТОЯННЫХ КЛИЕНТОВ', className='box-text'),
+                                            html.Small('выберете даты', className='muted-text')
+                                        ]
+                                    ),
+                                    DashIconify(
+                                        icon="material-symbols:keyboard-arrow-down-rounded",
+                                        width=30,
+                                        color='#d6d6d6',
+                                        className='icon-arrow',
+                                    )
+                                ]
+                            ),
+                            html.Div(className='right-data-numeric',
+                                children = [
+                                    html.Details(
+                                        children=[
+                                            html.Summary(className='icon-on-graph',
+                                                children=[
+                                                    
+                                                ]
+                                            ),
+                                            html.Div(className="choose-date",
+                                                children=[
+                                                    dcc.DatePickerRange(
+                                                        id="date-regular_customers", className='date',
+                                                        day_size=39,
+                                                        min_date_allowed=df_select_date.Date.min().date(),
+                                                        max_date_allowed=df_select_date.Date.max().date(),
+                                                        start_date=df_select_date.Date.min().date(),
+                                                        end_date=df_select_date.Date.max().date(),
+                                                    ),
+                                                ] 
+                                            )
+                                        ]
+                                    ),
+                                    html.P(id='regular_customers')
+                                ]
+                            )
+                        ]
+                    ),
+                ]
             ),
-            # ----------- конец четвертого графика -----------
-        ], className='main-container-for-graph'),
-    ]
-)
+            html.Div(children=[
+                # ----------- первый график -----------
+                html.Div([
+                    dcc.Tabs(id="tabs", value='tab-1', className='TabGroup', children=[
+                        dcc.Tab(label='Цена', value='tab-1', style = tab_style,
+                        selected_style = tab_selected_style, className='One-Tab'),
+                        dcc.Tab(label='Кол-во', value='tab-12', style = tab_style,
+                        selected_style = tab_selected_style,className='One-Tab'),
+                    ], style = tabs_styles),
+                    html.Div(id='tabs-content', className='graf-only'),
+                    # --------------- Числовые данные внизу графика ---------------
+                    html.Div(children = [
+                            # --------------- Первая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-currency-ruble",
+                                            width=20,
+                                            )
+                                    ], className='icon-price'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ₽'),
+                                            html.Small('продано за 1 день', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(daily_price_storage['pricedailysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                            # --------------- Вторая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-production-quantity-limits",
+                                            width=20,
+                                            )
+                                    ], className='icon-amount'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ШТ'),
+                                            html.Small('продано за 1 день', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(daily_price_storage['amountdailysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                    ],
+                             className='data-on-graph')
+                    ], className='container-for-graph'
+                ),
+                # ----------- второй график -----------
+                html.Div([
+                    dcc.Tabs(id="tabs_2", value='tab-2', className='TabGroup', children=[
+                        dcc.Tab(label='Цена', value='tab-2', style = tab_style,
+                        selected_style = tab_selected_style, className='One-Tab'),
+                        dcc.Tab(label='Кол-во', value='tab-22', style = tab_style,
+                        selected_style = tab_selected_style, className='One-Tab'),
+                    ], style = tabs_styles),
+                    html.Div(id='tabs-content_2', className='graf-only'),
+                    # --------------- Числовые данные внизу графика ---------------
+                    html.Div(children = [
+                            # --------------- Первая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-currency-ruble",
+                                            width=20,
+                                            )
+                                    ], className='icon-price'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ₽'),
+                                            html.Small('продано за 1 неделю', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(weekly_price_storage['priceweeklysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                            # --------------- Вторая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-production-quantity-limits",
+                                            width=20,
+                                            )
+                                    ], className='icon-amount'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ШТ'),
+                                            html.Small('продано за 1 неделю', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(weekly_price_storage['amountweeklysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                    ],
+                             className='data-on-graph')
+                    ], className='container-for-graph'
+                ),
+                # ----------- третий график -----------
+                html.Div([
+                    dcc.Tabs(id="tabs_3", value='tab-3', className='TabGroup', children=[
+                        dcc.Tab(label='Цена', value='tab-3', style = tab_style,
+                        selected_style = tab_selected_style, className='One-Tab'),
+                        dcc.Tab(label='Кол-во', value='tab-32', style = tab_style,
+                        selected_style = tab_selected_style,className='One-Tab'),
+                    ], style = tabs_styles),
+                    html.Div(id='tabs-content_3', className='graf-only'),
+                    # --------------- Числовые данные внизу графика ---------------
+                    html.Div(children = [
+                            # --------------- Первая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-currency-ruble",
+                                            width=20,
+                                            )
+                                    ], className='icon-price'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ₽'),
+                                            html.Small('продано за 1 месяц', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(monthly_price_storage['pricemonthlysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                            # --------------- Вторая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-production-quantity-limits",
+                                            width=20,
+                                            )
+                                    ], className='icon-amount'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ШТ'),
+                                            html.Small('продано за 1 месяц', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(monthly_price_storage['amountmonthlysumavg'])], className='number')
+                            ], className='data-on-graph-container-test'),
+                    ],
+                             className='data-on-graph')
+                    ], className='container-for-graph'
+                ),
+                # ----------- четвертый график -----------
+                html.Div([
+                    html.Div(
+                        children=[
+                            html.Details(
+                                children=[
+                                    html.Summary(children=[
+                                        DashIconify(
+                                        icon="material-symbols:keyboard-arrow-down-rounded",
+                                        width=30,
+                                        color='#d6d6d6'
+                                        )
+                                    ], className='icon-on-graph'),
+                                    html.Div(
+                                        children=[
+                                            dcc.DatePickerRange(
+                                                id="date-range", className='date',
+                                                day_size=39,
+                                                style={'backgroundColor': '#000000'},
+                                                min_date_allowed=df_select_date.Date.min().date(),
+                                                max_date_allowed=df_select_date.Date.max().date(),
+                                                start_date=df_select_date.Date.min().date(),
+                                                end_date=df_select_date.Date.max().date(),
+                                                    ),
+                                        ], className="choose-date"
+                                    )
+                                ]
+                            ),
+                            html.Div(
+                                children=[
+                                    dcc.Tabs(id="tabs_4", value='tab-4', className='TabGroup-2',
+                                            children=[
+                                                dcc.Tab(label='Цена', value='tab-4', style = tab_style,
+                                                selected_style = tab_selected_style, className='One-Tab',),
+                                                dcc.Tab(label='Кол-во', value='tab-42', style = tab_style,
+                                                selected_style = tab_selected_style,className='One-Tab'),
+                                            ], style = tabs_styles
+                                    )
+                                ]
+                            ),
+                        ], className='TabGroup-3'
+                    ),
+                    html.Div(id='tabs-content_4', className='graf-only'),
+                    # --------------- Числовые данные внизу графика ---------------
+                    html.Div(children = [
+                            # --------------- Первая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(children = [
+                                    # --------------- Иконка ---------------
+                                    html.Div(children = [
+                                        DashIconify(
+                                            icon="ic:sharp-currency-ruble",
+                                            width=20,
+                                            )
+                                    ], className='icon-price'),
+                                    # --------------- Только текст ---------------
+                                    html.Div(children = [
+                                            html.H5('СРЕДНИЕ ПРОДАЖИ, ₽'),
+                                            html.Small('продано за период', className='muted-text')
+                                        ], className='data-on-graph-info-test')], className='icon-and-text'),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(children = [
+                                    html.P(id='price_data')], className='number')
+                            ], className='data-on-graph-container-test'),
+                            # --------------- Вторая плашка с данными ---------------
+                            html.Div(children = [
+                                # --------------- Иконка + текст ---------------
+                                html.Div(className='icon-and-text',
+                                    children = [
+                                        # --------------- Иконка ---------------
+                                        html.Div(className='icon-amount', children = [
+                                            DashIconify(
+                                                icon="ic:sharp-production-quantity-limits",
+                                                width=20,
+                                                )
+                                        ]),
+                                        # --------------- Только текст ---------------
+                                        html.Div(className='data-on-graph-info-test', children = [
+                                                html.H5('СРЕДНИЕ ПРОДАЖИ, ШТ'),
+                                                html.Small('продано за период', className='muted-text')
+                                        ])
+                                    ]
+                                ),
+                                # --------------- Весь текст с числом ---------------
+                                html.Div(className='number', children = [
+                                    html.P(id='amount_data')]
+                                )
+                            ], className='data-on-graph-container-test'),
+                        ], className='data-on-graph'
+                    )
+                    ], className='container-for-graph'
+                ),
+                # ----------- конец четвертого графика -----------
+            ], className='main-container-for-graph'),
+        ]
+    ),
+    html.Div(className='right',
+        children=[
+            html.Div(className='top',
+                children=[
+                    html.Div(className='profile',
+                        children=[
+                            html.Div(
+                                children=[
+                                    html.P('Добро пожаловать'),
+                                    html.B('Антон')
+                                ], className='info'
+                            ),
+                            html.Div(className='profile-photo',
+                                children=[
+                                    html.Img(src='assets/images/profile-2.jpg')
+                                ]
+                            )
+                        ]
+                    ),
+
+                ]
+            ),
+            # ---------- END TOP -----------
+            html.Div(className='sales-analytics',
+                children=[
+                    html.H2('Аналитика заказов'),
+                    # ---------- FIRST ITEM -----------
+                    html.Div(className='item online', 
+                        children=[
+                            html.Div(className='icon', 
+                                children=[
+                                    DashIconify(icon="ic:sharp-production-quantity-limits",
+                                                width=20),
+                                ]
+                            ),
+                            html.Div(className='right', 
+                                children=[
+                                    html.Div(className='info', 
+                                        children=[
+                                            html.H3('ПОСТУПЛЕНИЙ ВЧЕРА'),
+                                            html.Small('За 24 часа', className='text-muted')
+                                        ]
+                                    ),
+                                    html.H5('+8%', className='success'),
+                                    html.H3('243')
+                                ]
+                            ),
+                        ]
+                    ),
+                    # ---------- SECOND ITEM -----------
+                    html.Div(className='item online', 
+                        children=[
+                            html.Div(className='icon', 
+                                children=[
+                                    DashIconify(icon="ic:sharp-production-quantity-limits",
+                                                width=20),
+                                ]
+                            ),
+                            html.Div(className='right', 
+                                children=[
+                                    html.Div(className='info', 
+                                        children=[
+                                            html.H3('ЗАБРАЛИ ЗАКАЗ ВЧЕРА'),
+                                            html.Small('За 24 часа', className='text-muted')
+                                        ]
+                                    ),
+                                    html.H5('+8%', className='success'),
+                                    html.H3('243')
+                                ]
+                            ),
+                        ]
+                    ),
+                    # ---------- THIRD ITEM -----------
+                    html.Div(className='item online', 
+                        children=[
+                            html.Div(className='icon', 
+                                children=[
+                                    DashIconify(icon="ic:sharp-production-quantity-limits",
+                                                width=20),
+                                ]
+                            ),
+                            html.Div(className='right', 
+                                children=[
+                                    html.Div(className='info', 
+                                        children=[
+                                            html.H3('СДЕЛАЛ ЗАКАЗ ВЧЕРА'),
+                                            html.Small('За 24 часа', className='text-muted')
+                                        ]
+                                    ),
+                                    html.H5('+8%', className='success'),
+                                    html.H3('243')
+                                ]
+                            ),
+                        ]
+                    ),
+
+                ]
+            )
+            # ---------- END SALES ANALYTICS -----------
+        ]
+    )
+
+], className='container')
+
+
+
 @app.callback(Output('tabs-content', 'children'),
               Input('tabs', 'value'))
 def render_content(tab):
@@ -850,16 +1068,9 @@ def output_data_price(start_date, end_date):
     choose_count_7500 = df_amount7500_choose['amount']
 
 
-    sum1 = 0
-    for i in choose_date_7500:
-        #sum1 +=i
-        print(i)
     count_dict = {}
     for i in range(len(choose_date_7500)):
         count_dict[choose_date_7500[i]] = choose_count_7500[i]
-
-    print(sum1)
-    print('************************')
     
 
     list_for_count = []
@@ -871,13 +1082,118 @@ def output_data_price(start_date, end_date):
                     list_for_count.append(int(v))
 
     sum_count = sum(list_for_count)
-    print(sum_count)
+    return sum_count
+
+
+@app.callback(
+    Output('yandex_payment', 'children'),
+    [
+        Input("date-yandex_payment", "start_date"),
+        Input("date-yandex_payment", "end_date"),
+    ],
+)
+def output_yandex_payment(start_date, end_date):
+    mask = (
+        (df_amount7500_choose.Date >= start_date)
+        & (df_amount7500_choose.Date <= end_date)
+    )
+    filtered_data = df_amount7500_choose.loc[mask, :]
+    
+    choose_data_7500 = filtered_data["Date"], 
+    choose_date_7500 = df_amount7500_choose['dateavg']
+    choose_count_7500 = df_amount7500_choose['amount']
+
+
+    count_dict = {}
+    for i in range(len(choose_date_7500)):
+        count_dict[choose_date_7500[i]] = choose_count_7500[i]
+    
+
+    list_for_count = []
+    for i, v in count_dict.items():
+        for s in choose_data_7500:
+            for j in s:
+                
+                if str(j)==str(i):
+                    list_for_count.append(int(v))
+
+    sum_count = sum(list_for_count)
+    return sum_count
+
+
+@app.callback(
+    Output('uniq_customers', 'children'),
+    [
+        Input("date-uniq_customers", "start_date"),
+        Input("date-uniq_customers", "end_date"),
+    ],
+)
+def output_yandex_payment(start_date, end_date):
+    mask = (
+        (df_amount7500_choose.Date >= start_date)
+        & (df_amount7500_choose.Date <= end_date)
+    )
+    filtered_data = df_amount7500_choose.loc[mask, :]
+    
+    choose_data_7500 = filtered_data["Date"], 
+    choose_date_7500 = df_amount7500_choose['dateavg']
+    choose_count_7500 = df_amount7500_choose['amount']
+
+
+    count_dict = {}
+    for i in range(len(choose_date_7500)):
+        count_dict[choose_date_7500[i]] = choose_count_7500[i]
+    
+
+    list_for_count = []
+    for i, v in count_dict.items():
+        for s in choose_data_7500:
+            for j in s:
+                
+                if str(j)==str(i):
+                    list_for_count.append(int(v))
+
+    sum_count = sum(list_for_count)
+    return sum_count
+
+@app.callback(
+    Output('regular_customers', 'children'),
+    [
+        Input("date-regular_customers", "start_date"),
+        Input("date-regular_customers", "end_date"),
+    ],
+)
+def output_yandex_payment(start_date, end_date):
+    mask = (
+        (df_amount7500_choose.Date >= start_date)
+        & (df_amount7500_choose.Date <= end_date)
+    )
+    filtered_data = df_amount7500_choose.loc[mask, :]
+    
+    choose_data_7500 = filtered_data["Date"], 
+    choose_date_7500 = df_amount7500_choose['dateavg']
+    choose_count_7500 = df_amount7500_choose['amount']
+
+
+    count_dict = {}
+    for i in range(len(choose_date_7500)):
+        count_dict[choose_date_7500[i]] = choose_count_7500[i]
+    
+
+    list_for_count = []
+    for i, v in count_dict.items():
+        for s in choose_data_7500:
+            for j in s:
+                
+                if str(j)==str(i):
+                    list_for_count.append(int(v))
+
+    sum_count = sum(list_for_count)
     return sum_count
                 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
-
+    app.run(debug=True)
 
 
 
